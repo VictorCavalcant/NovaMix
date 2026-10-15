@@ -1,0 +1,10 @@
+[package]
+name = "novamix-mixer-graph"
+description = "Channel/bus topology, routing matrix, solo/mute resolution and feedback-loop detection"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true

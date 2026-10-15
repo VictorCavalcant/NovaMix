@@ -1,0 +1,49 @@
+/*++
+
+Module Name:
+
+    NovaMixVirtualAudio.rc
+
+Abstract:
+
+    Version resource of the NovaMix virtual audio driver. Keep the version in
+    sync with DriverVer in NovaMixVirtualAudio.inx (set by stampinf).
+--*/
+
+#include <windows.h>
+
+#define NOVAMIX_DRIVER_VERSION      0,1,0,0
+#define NOVAMIX_DRIVER_VERSION_STR  "0.1.0.0"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     NOVAMIX_DRIVER_VERSION
+PRODUCTVERSION  NOVAMIX_DRIVER_VERSION
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+#ifdef DBG
+FILEFLAGS       VS_FF_DEBUG
+#else
+FILEFLAGS       0
+#endif
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_DRV
+FILESUBTYPE     VFT2_DRV_SOUND
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "NovaMix"
+            VALUE "FileDescription",  "NovaMix Virtual Audio Driver"
+            VALUE "FileVersion",      NOVAMIX_DRIVER_VERSION_STR
+            VALUE "InternalName",     "NovaMixVirtualAudio.sys"
+            VALUE "LegalCopyright",   "Copyright (C) 2026 NovaMix contributors. Portions Copyright (C) Microsoft Corporation (MS-PL)."
+            VALUE "OriginalFilename", "NovaMixVirtualAudio.sys"
+            VALUE "ProductName",      "NovaMix"
+            VALUE "ProductVersion",   NOVAMIX_DRIVER_VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

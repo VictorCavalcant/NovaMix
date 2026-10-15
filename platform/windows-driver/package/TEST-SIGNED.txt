@@ -1,0 +1,4 @@
+This NovaMix driver package is signed with a self-signed TEST certificate.
+It only installs on machines with test signing enabled (bcdedit /set testsigning on).
+Use it on a test VM: run install-driver.ps1 as administrator.
+Do not ship it: end-user packages must be attestation-signed (docs/decisions.md, D6).

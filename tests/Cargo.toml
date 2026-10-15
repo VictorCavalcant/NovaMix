@@ -1,0 +1,18 @@
+[package]
+name = "novamix-tests"
+description = "Cross-crate integration, DSP fixture and performance tests"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+novamix-config.workspace = true
+novamix-diagnostics.workspace = true
+novamix-audio-core.workspace = true
+novamix-control.workspace = true
+rtrb.workspace = true
+novamix-device-api.workspace = true

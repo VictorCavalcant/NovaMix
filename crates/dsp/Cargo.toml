@@ -1,0 +1,18 @@
+[package]
+name = "novamix-dsp"
+description = "Real-time safe DSP building blocks for NovaMix (filters, dynamics, noise reduction, meters, resampling)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+default = ["serde", "rnnoise"]
+serde = ["dep:serde"]
+# Optional neural noise suppression (pure Rust port of RNNoise, BSD-3-Clause).
+rnnoise = ["dep:nnnoiseless"]
+
+[dependencies]
+realfft.workspace = true
+serde = { workspace = true, optional = true }
+nnnoiseless = { workspace = true, optional = true }

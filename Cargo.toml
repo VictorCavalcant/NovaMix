@@ -1,0 +1,80 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/dsp",
+    "crates/mixer-graph",
+    "crates/config-model",
+    "crates/diagnostics",
+    "crates/audio-core",
+    "crates/device-api",
+    "crates/device-windows",
+    "crates/control",
+    "app/desktop-ui",
+    "app/cli",
+    "tests",
+]
+default-members = ["app/desktop-ui", "app/cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT OR Apache-2.0"
+authors = ["NovaMix contributors"]
+repository = "https://example.invalid/novamix"
+
+[workspace.dependencies]
+# Internal crates
+novamix-dsp = { path = "crates/dsp" }
+novamix-mixer-graph = { path = "crates/mixer-graph" }
+novamix-config = { path = "crates/config-model" }
+novamix-diagnostics = { path = "crates/diagnostics" }
+novamix-audio-core = { path = "crates/audio-core" }
+novamix-device-api = { path = "crates/device-api" }
+novamix-device-windows = { path = "crates/device-windows" }
+novamix-control = { path = "crates/control" }
+
+# External crates (versions pinned deliberately; Cargo.lock is committed)
+cpal = "0.18.2"
+rtrb = "0.4.0"
+realfft = "3.5.0"
+nnnoiseless = { version = "0.5.2", default-features = false }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.154"
+toml = "1.1.8"
+directories = "6.0.0"
+crossbeam-channel = "0.5.17"
+thiserror = "2.0.21"
+anyhow = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt"] }
+tracing-appender = "0.2.5"
+eframe = { version = "0.36.2", default-features = false, features = ["default_fonts", "glow", "persistence", "accesskit"] }
+egui = "0.36.2"
+rfd = "0.17.2"
+clap = { version = "4.6.7", features = ["derive"] }
+global-hotkey = "0.8.0"
+tray-icon = "0.26.1"
+windows = "0.62.2"
+windows-core = "0.62.2"
+windows-registry = "0.100.0"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+debug = "line-tables-only"
+panic = "unwind"
+
+# DSP code is hot even in debug builds; keep it optimized so the dev build
+# is usable for listening tests.
+[profile.dev.package.novamix-dsp]
+opt-level = 3
+[profile.dev.package.novamix-audio-core]
+opt-level = 3
+[profile.dev.package.realfft]
+opt-level = 3
+[profile.dev.package.rustfft]
+opt-level = 3
+[profile.dev.package.nnnoiseless]
+opt-level = 3

@@ -1,0 +1,26 @@
+[package]
+name = "novamix-cli"
+description = "Headless NovaMix tools: device listing, benchmarks, soak tests, test tone, profile validation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "novamix-cli"
+path = "src/main.rs"
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+novamix-config.workspace = true
+novamix-diagnostics.workspace = true
+novamix-audio-core.workspace = true
+novamix-control.workspace = true
+novamix-device-api.workspace = true
+novamix-device-windows.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde_json.workspace = true

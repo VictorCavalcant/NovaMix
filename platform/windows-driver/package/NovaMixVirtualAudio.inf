@@ -1,0 +1,246 @@
+;
+; NovaMix Virtual Audio Driver
+;
+; Root-enumerated PortCls/WaveRT driver with three endpoints:
+;   "NovaMix Virtual Playback" (render, null sink captured by WASAPI loopback)
+;   "NovaMix Mic Feed"         (render, feeds the internal loopback ring)
+;   "NovaMix Virtual Mic"      (capture, reads the internal loopback ring)
+;
+; The endpoint names are a contract with crates/device-windows/src/virtual_endpoints.rs.
+; Derived from the Windows-driver-samples SimpleAudioSample INF (MS-PL).
+;
+
+[Version]
+Signature   = "$Windows NT$"
+Class       = MEDIA
+Provider    = %ProviderName%
+ClassGUID   = {4d36e96c-e325-11ce-bfc1-08002be10318}
+DriverVer = 10/14/2026,0.1.0.0
+CatalogFile = NovaMixVirtualAudio.cat
+PnpLockDown = 1
+
+[SourceDisksNames]
+222 = %DiskName%,"",222
+
+[SourceDisksFiles]
+NovaMixVirtualAudio.sys = 222
+
+[Manufacturer]
+%MfgName% = NovaMix, NTamd64.10.0...19041
+
+[NovaMix.NTamd64.10.0...19041]
+%NovaMix.DeviceDesc% = NovaMix_Device, ROOT\NovaMixVirtualAudio
+
+[DestinationDirs]
+NovaMix_Device.CopyList = 13    ; 13 = package's DriverStore directory
+
+;======================================================
+; Device install
+;======================================================
+[NovaMix_Device.CopyList]
+NovaMixVirtualAudio.sys
+
+[NovaMix_Device.NT]
+Include   = ks.inf, wdmaudio.inf
+Needs     = KS.Registration, WDMAUDIO.Registration
+CopyFiles = NovaMix_Device.CopyList
+AddReg    = NovaMix_Device.AddReg
+
+[NovaMix_Device.AddReg]
+HKR,,AssociatedFilters,,"wdmaud,swmidi,redbook"
+HKR,,Driver,,NovaMixVirtualAudio.sys
+
+HKR,Drivers,SubClasses,,"wave,midi,mixer"
+
+HKR,Drivers\wave\wdmaud.drv,Driver,,wdmaud.drv
+HKR,Drivers\midi\wdmaud.drv,Driver,,wdmaud.drv
+HKR,Drivers\mixer\wdmaud.drv,Driver,,wdmaud.drv
+
+HKR,Drivers\wave\wdmaud.drv,Description,,%NovaMix.DeviceDesc%
+HKR,Drivers\mixer\wdmaud.drv,Description,,%NovaMix.DeviceDesc%
+
+; Endpoint names (KSPROPERTY_PIN_NAME of the topology endpoint pins).
+HKR,%MEDIA_CATEGORIES%\%NameGuid.Playback%,Name,,%Endpoint.Playback%
+HKR,%MEDIA_CATEGORIES%\%NameGuid.MicFeed%,Name,,%Endpoint.MicFeed%
+HKR,%MEDIA_CATEGORIES%\%NameGuid.Mic%,Name,,%Endpoint.Mic%
+
+[NovaMix_Device.NT.Interfaces]
+;
+; "NovaMix Virtual Playback" render endpoint.
+;
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_WavePlayback%,     NovaMix.I.WavePlayback
+AddInterface = %KSCATEGORY_RENDER%,   %KSNAME_WavePlayback%,     NovaMix.I.WavePlayback
+AddInterface = %KSCATEGORY_REALTIME%, %KSNAME_WavePlayback%,     NovaMix.I.WavePlayback
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_TopologyPlayback%, NovaMix.I.TopologyPlayback
+AddInterface = %KSCATEGORY_TOPOLOGY%, %KSNAME_TopologyPlayback%, NovaMix.I.TopologyPlayback
+
+;
+; "NovaMix Mic Feed" render endpoint.
+;
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_WaveMicFeed%,      NovaMix.I.WaveMicFeed
+AddInterface = %KSCATEGORY_RENDER%,   %KSNAME_WaveMicFeed%,      NovaMix.I.WaveMicFeed
+AddInterface = %KSCATEGORY_REALTIME%, %KSNAME_WaveMicFeed%,      NovaMix.I.WaveMicFeed
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_TopologyMicFeed%,  NovaMix.I.TopologyMicFeed
+AddInterface = %KSCATEGORY_TOPOLOGY%, %KSNAME_TopologyMicFeed%,  NovaMix.I.TopologyMicFeed
+
+;
+; "NovaMix Virtual Mic" capture endpoint.
+;
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_WaveMic%,          NovaMix.I.WaveMic
+AddInterface = %KSCATEGORY_REALTIME%, %KSNAME_WaveMic%,          NovaMix.I.WaveMic
+AddInterface = %KSCATEGORY_CAPTURE%,  %KSNAME_WaveMic%,          NovaMix.I.WaveMic
+AddInterface = %KSCATEGORY_AUDIO%,    %KSNAME_TopologyMic%,      NovaMix.I.TopologyMic
+AddInterface = %KSCATEGORY_TOPOLOGY%, %KSNAME_TopologyMic%,      NovaMix.I.TopologyMic
+
+;======================================================
+; Interfaces: Virtual Playback
+;======================================================
+[NovaMix.I.WavePlayback]
+AddReg = NovaMix.I.WavePlayback.AddReg
+
+[NovaMix.I.WavePlayback.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.WavePlayback.szPname%
+
+[NovaMix.I.TopologyPlayback]
+AddReg = NovaMix.I.TopologyPlayback.AddReg
+
+[NovaMix.I.TopologyPlayback.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.TopologyPlayback.szPname%
+HKR,EP\0,%PKEY_AudioEndpoint_Association%,,%KSNODETYPE_ANY%
+HKR,EP\0,%PKEY_AudioEndpoint_Supports_EventDriven_Mode%,0x00010001,0x1
+; Default device format: 48 kHz, 2 channels, 32-bit float (WAVEFORMATEXTENSIBLE).
+HKR,EP\0,%PKEY_AudioEngine_OEMFormat%,%REG_BINARY%,FE,FF,02,00,80,BB,00,00,00,DC,05,00,08,00,20,00,16,00,20,00,03,00,00,00,03,00,00,00,00,00,10,00,80,00,00,AA,00,38,9B,71
+
+;======================================================
+; Interfaces: Mic Feed
+;======================================================
+[NovaMix.I.WaveMicFeed]
+AddReg = NovaMix.I.WaveMicFeed.AddReg
+
+[NovaMix.I.WaveMicFeed.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.WaveMicFeed.szPname%
+
+[NovaMix.I.TopologyMicFeed]
+AddReg = NovaMix.I.TopologyMicFeed.AddReg
+
+[NovaMix.I.TopologyMicFeed.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.TopologyMicFeed.szPname%
+HKR,EP\0,%PKEY_AudioEndpoint_Association%,,%KSNODETYPE_ANY%
+HKR,EP\0,%PKEY_AudioEndpoint_Supports_EventDriven_Mode%,0x00010001,0x1
+HKR,EP\0,%PKEY_AudioEngine_OEMFormat%,%REG_BINARY%,FE,FF,02,00,80,BB,00,00,00,DC,05,00,08,00,20,00,16,00,20,00,03,00,00,00,03,00,00,00,00,00,10,00,80,00,00,AA,00,38,9B,71
+
+;======================================================
+; Interfaces: Virtual Mic
+;======================================================
+[NovaMix.I.WaveMic]
+AddReg = NovaMix.I.WaveMic.AddReg
+
+[NovaMix.I.WaveMic.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.WaveMic.szPname%
+
+[NovaMix.I.TopologyMic]
+AddReg = NovaMix.I.TopologyMic.AddReg
+
+[NovaMix.I.TopologyMic.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%NovaMix.TopologyMic.szPname%
+HKR,EP\0,%PKEY_AudioEndpoint_Association%,,%KSNODETYPE_ANY%
+HKR,EP\0,%PKEY_AudioEndpoint_Supports_EventDriven_Mode%,0x00010001,0x1
+HKR,EP\0,%PKEY_AudioEngine_OEMFormat%,%REG_BINARY%,FE,FF,02,00,80,BB,00,00,00,DC,05,00,08,00,20,00,16,00,20,00,03,00,00,00,03,00,00,00,00,00,10,00,80,00,00,AA,00,38,9B,71
+
+;======================================================
+; Service
+;======================================================
+[NovaMix_Device.NT.Services]
+AddService = NovaMixVirtualAudio, 0x00000002, NovaMix_Service_Inst
+
+[NovaMix_Service_Inst]
+DisplayName   = %NovaMix.SvcDesc%
+ServiceType   = 1
+StartType     = 3
+ErrorControl  = 1
+ServiceBinary = %13%\NovaMixVirtualAudio.sys
+AddReg        = NovaMix_Service.AddReg
+
+[NovaMix_Service.AddReg]
+; Mic Feed -> Virtual Mic latency in ms (5..100). NOCLOBBER keeps a local override.
+HKR,Parameters,MicLoopbackLatencyMs,0x00010003,20
+
+[NovaMix_Device.NT.HW]
+AddReg = AUDIOHW.AddReg
+
+[AUDIOHW.AddReg]
+; FILE_DEVICE_SOUND
+HKR,,DeviceType,0x10001,0x0000001D
+; SDDL_DEVOBJ_SYS_ALL_ADM_RWX_WORLD_RWX_RES_RWX
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GRGWGX;;;BA)(A;;GRGWGX;;;WD)(A;;GRGWGX;;;RC)"
+
+;======================================================
+; WDF
+;======================================================
+[NovaMix_Device.NT.Wdf]
+KmdfService = NovaMixVirtualAudio, NovaMix_WdfSect
+
+[NovaMix_WdfSect]
+KmdfLibraryVersion = 1.15
+
+;======================================================
+; Strings
+;======================================================
+[Strings]
+
+; Non-localizable
+
+KSNAME_WavePlayback      = "WavePlayback"
+KSNAME_TopologyPlayback  = "TopologyPlayback"
+KSNAME_WaveMicFeed       = "WaveMicFeed"
+KSNAME_TopologyMicFeed   = "TopologyMicFeed"
+KSNAME_WaveMic           = "WaveMic"
+KSNAME_TopologyMic       = "TopologyMic"
+
+Proxy.CLSID          = "{17CCA71B-ECD7-11D0-B908-00A0C9223196}"
+KSCATEGORY_AUDIO     = "{6994AD04-93EF-11D0-A3CC-00A0C9223196}"
+KSCATEGORY_RENDER    = "{65E8773E-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_CAPTURE   = "{65E8773D-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_REALTIME  = "{EB115FFC-10C8-4964-831D-6DCB02E6F23F}"
+KSCATEGORY_TOPOLOGY  = "{DDA54A40-1E4C-11D1-A050-405705C10000}"
+
+KSNODETYPE_ANY       = "{00000000-0000-0000-0000-000000000000}"
+
+MEDIA_CATEGORIES     = "MediaCategories"
+NameGuid.Playback    = "{2B829421-11A6-4292-9532-4E10F4E2D1F0}"
+NameGuid.MicFeed     = "{B7803720-01E6-49A4-B3D2-85E23AB19EBC}"
+NameGuid.Mic         = "{0A146EEA-2D6E-40AA-B765-3A931BC1F122}"
+
+PKEY_AudioEndpoint_Association                  = "{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},2"
+PKEY_AudioEndpoint_Supports_EventDriven_Mode    = "{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},7"
+PKEY_AudioEngine_OEMFormat                      = "{E4870E26-3CC5-4CD2-BA46-CA0A9A70ED04},3"
+
+REG_BINARY           = 0x00000001
+
+; Localizable
+
+ProviderName         = "NovaMix"
+MfgName              = "NovaMix"
+DiskName             = "NovaMix Virtual Audio Driver Disk"
+
+NovaMix.DeviceDesc   = "NovaMix Virtual Audio Device"
+NovaMix.SvcDesc      = "NovaMix Virtual Audio Driver"
+
+; Endpoint names: contract with the NovaMix app, do not translate.
+Endpoint.Playback    = "NovaMix Virtual Playback"
+Endpoint.MicFeed     = "NovaMix Mic Feed"
+Endpoint.Mic         = "NovaMix Virtual Mic"
+
+NovaMix.WavePlayback.szPname     = "NovaMix Virtual Playback Wave"
+NovaMix.TopologyPlayback.szPname = "NovaMix Virtual Playback Topology"
+NovaMix.WaveMicFeed.szPname      = "NovaMix Mic Feed Wave"
+NovaMix.TopologyMicFeed.szPname  = "NovaMix Mic Feed Topology"
+NovaMix.WaveMic.szPname          = "NovaMix Virtual Mic Wave"
+NovaMix.TopologyMic.szPname      = "NovaMix Virtual Mic Topology"
+

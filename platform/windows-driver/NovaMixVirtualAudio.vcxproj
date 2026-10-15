@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  NovaMix virtual audio driver (PortCls/WaveRT, derived from the SimpleAudioSample/SysVAD samples).
+  Build with scripts\build-driver.ps1, which also signs the package and copies it to package\.
+  Requires Visual Studio 2022 + WDK 10.0.26100 (Windows Driver Kit component + Spectre libraries).
+-->
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{60C920B0-57C0-40CB-BD00-8876B6C7051A}</ProjectGuid>
+    <RootNamespace>NovaMixVirtualAudio</RootNamespace>
+    <KMDF_VERSION_MAJOR>1</KMDF_VERSION_MAJOR>
+    <KMDF_VERSION_MINOR>15</KMDF_VERSION_MINOR>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <TargetVersion>Windows10</TargetVersion>
+    <DriverTargetPlatform>Windows Driver</DriverTargetPlatform>
+    <DriverType>KMDF</DriverType>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <ConfigurationType>Driver</ConfigurationType>
+    <SpectreMitigation>Spectre</SpectreMitigation>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Debug'">
+    <UseDebugLibraries>True</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Release'">
+    <UseDebugLibraries>False</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup>
+    <TargetName>NovaMixVirtualAudio</TargetName>
+    <OutDir>$(MSBuildProjectDirectory)\build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\build\obj\$(Platform)\$(Configuration)\</IntDir>
+    <!-- Signing is done by scripts\build-driver.ps1 (test certificate) or by the release pipeline. -->
+    <SignMode>Off</SignMode>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DDK_INC_PATH);src</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_WIN32;UNICODE;_UNICODE;PC_IMPLEMENTATION;_USE_WAVERT_;_NEW_DELETE_OPERATORS_;DEBUG_LEVEL=DEBUGLVL_TERSE</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DDK_INC_PATH);src</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_WIN32;UNICODE;_UNICODE</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);$(DDK_LIB_PATH)\portcls.lib;$(DDK_LIB_PATH)\stdunk.lib;$(DDK_LIB_PATH)\libcntpr.lib</AdditionalDependencies>
+    </Link>
+    <DriverSign>
+      <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
+    </DriverSign>
+    <Inf>
+      <!-- DriverVer version; keep in sync with src\NovaMixVirtualAudio.rc. -->
+      <TimeStamp>0.1.0.0</TimeStamp>
+    </Inf>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\adapter.cpp" />
+    <ClCompile Include="src\basetopo.cpp" />
+    <ClCompile Include="src\common.cpp" />
+    <ClCompile Include="src\hw.cpp" />
+    <ClCompile Include="src\kshelper.cpp" />
+    <ClCompile Include="src\loopback.cpp" />
+    <ClCompile Include="src\mintopo.cpp" />
+    <ClCompile Include="src\minwavert.cpp" />
+    <ClCompile Include="src\minwavertstream.cpp" />
+    <ClCompile Include="src\newdelete.cpp" />
+    <ResourceCompile Include="src\NovaMixVirtualAudio.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="NovaMixVirtualAudio.inx" />
+    <FilesToPackage Include="$(TargetPath)" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

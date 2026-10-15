@@ -1,0 +1,13 @@
+[package]
+name = "novamix-audio-core"
+description = "Real-time mixing engine: channel strips, buses, command queue, drift-compensated stream bridges"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+novamix-diagnostics.workspace = true
+rtrb.workspace = true

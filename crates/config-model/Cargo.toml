@@ -1,0 +1,16 @@
+[package]
+name = "novamix-config"
+description = "Versioned, validated configuration and profile model for NovaMix"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+directories.workspace = true
+thiserror.workspace = true

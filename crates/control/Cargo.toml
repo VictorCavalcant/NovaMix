@@ -1,0 +1,22 @@
+[package]
+name = "novamix-control"
+description = "Control plane: engine controller thread, profile reconciler, device supervisor and reconnection"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+novamix-config.workspace = true
+novamix-diagnostics.workspace = true
+novamix-audio-core.workspace = true
+novamix-device-api.workspace = true
+novamix-device-windows.workspace = true
+crossbeam-channel.workspace = true
+rtrb.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true

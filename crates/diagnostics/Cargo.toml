@@ -1,0 +1,12 @@
+[package]
+name = "novamix-diagnostics"
+description = "Lock-free metrics, real-time safe event queue and privacy-aware diagnostic reports"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rtrb.workspace = true
+serde.workspace = true
+serde_json.workspace = true

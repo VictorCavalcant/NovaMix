@@ -1,0 +1,37 @@
+[package]
+name = "novamix"
+description = "NovaMix desktop application (egui/eframe)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "novamix"
+path = "src/main.rs"
+
+[dependencies]
+novamix-dsp.workspace = true
+novamix-mixer-graph.workspace = true
+novamix-config.workspace = true
+novamix-diagnostics.workspace = true
+novamix-control.workspace = true
+novamix-audio-core.workspace = true
+novamix-device-api.workspace = true
+novamix-device-windows.workspace = true
+eframe.workspace = true
+egui.workspace = true
+realfft.workspace = true
+rfd.workspace = true
+crossbeam-channel.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+global-hotkey.workspace = true
+tray-icon.workspace = true
+
+[build-dependencies]
+embed-resource = "3.0.12"
